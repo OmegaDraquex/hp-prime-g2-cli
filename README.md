@@ -113,6 +113,14 @@ Pulls a PPL program from the calculator (case-sensitive name match) and prints t
 .\.venv\Scripts\hpprime.exe pull CLITEST -o clitest_backup.ppl
 ```
 
+### `hpprime delete`
+Deletes one or more PPL programs from the calculator via `0xEB` (case-sensitive name match). Pass `--verify` to confirm removal via `0xF9`.
+
+```powershell
+.\.venv\Scripts\hpprime.exe delete CLITEST --verify
+.\.venv\Scripts\hpprime.exe delete PROG1 PROG2 --verify
+```
+
 ---
 
 ## Python Library API

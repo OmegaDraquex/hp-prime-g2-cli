@@ -10,6 +10,7 @@ from hpprime.files import (
     TYPE_PROGRAM,
     decode_f7_message,
     decode_ppl_source,
+    encode_delete_object,
     encode_ppl_program,
 )
 from hpprime.protocol import chunk_v3_message
@@ -144,6 +145,30 @@ class TestProtocolOffline(unittest.TestCase):
         self.assertEqual([c[0] for c in big_chunks], [1, 2, 3])
         rebuilt = big_chunks[0][9:] + big_chunks[1][1:] + big_chunks[2][1:]
         self.assertEqual(rebuilt[:2500], big_payload)
+
+    def test_delete_wire_vectors(self) -> None:
+        vectors = [
+            (
+                "clitest",
+                "eb 03 00 00 00 12 06 0e d0 da 63 00 6c 00 69 00 74 00 65 00 73 00 74 00",
+            ),
+            (
+                "new program",
+                "eb 03 00 00 00 1a 06 16 6d 91 6e 00 65 00 77 00 20 00 70 00 72 00 6f 00 67 00 72 00 61 00 6d 00",
+            ),
+        ]
+        for name, expected_hex in vectors:
+            with self.subTest(name=name):
+                self.assertEqual(encode_delete_object(name), bytes.fromhex(expected_hex))
+
+    @unittest.skipUnless(
+        (CAPTURES / "03_delete.pcap").exists(),
+        "local USBPcap capture not present",
+    )
+    def test_exact_match_delete_capture_03(self) -> None:
+        msgs = _reassemble_v3_messages(CAPTURES / "03_delete.pcap")
+        self.assertEqual(encode_delete_object("clitest"), msgs[561])
+        self.assertEqual(encode_delete_object("new program"), msgs[609])
 
 
 if __name__ == "__main__":

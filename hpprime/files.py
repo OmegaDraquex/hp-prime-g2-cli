@@ -6,7 +6,7 @@ import struct
 import zlib
 from dataclasses import dataclass
 
-from hpprime.crc import compute_f7_crc, verify_f7_raw
+from hpprime.crc import compute_v3_object_crc, verify_f7_raw
 
 TYPE_SETTINGS = 0x00
 TYPE_APP = 0x02
@@ -43,6 +43,20 @@ class PrimeObject:
         return FILE_TYPE_NAMES.get(self.file_type, f"0x{self.file_type:02x}")
 
 
+def _build_raw_object(cmd: int, file_type: int, name: str, body: bytes = b"") -> bytes:
+    """Build a raw V3 object payload with its embedded CRC-16 header."""
+    if not name:
+        raise ValueError("Object name must be non-empty")
+
+    name_bytes = name.encode("utf-16le")
+    if len(name_bytes) > 255:
+        raise ValueError(f"Object name too long ({len(name_bytes)} UTF-16LE bytes, max 255)")
+
+    raw_stub = bytes([file_type, len(name_bytes), 0, 0]) + name_bytes + body
+    crc = compute_v3_object_crc(cmd, raw_stub)
+    return bytes([file_type, len(name_bytes)]) + struct.pack("<H", crc) + name_bytes + body
+
+
 def encode_ppl_program(
     name: str,
     source: str,
@@ -50,19 +64,9 @@ def encode_ppl_program(
     compress: bool | None = None,
 ) -> bytes:
     """Encode a PPL program into a complete 0xF7 V3 wire message."""
-    if not name:
-        raise ValueError("Program name must be non-empty")
-
-    name_bytes = name.encode("utf-16le")
-    if len(name_bytes) > 255:
-        raise ValueError(f"Program name too long ({len(name_bytes)} UTF-16LE bytes, max 255)")
-
     clean_source = source.lstrip("\ufeff").replace("\r\n", "\n").replace("\r", "\n")
     body_bytes = clean_source.encode("utf-16le") + b"\x00\x00"
-
-    raw_stub = bytes([TYPE_PROGRAM, len(name_bytes), 0, 0]) + name_bytes + body_bytes
-    crc = compute_f7_crc(raw_stub)
-    raw = bytes([TYPE_PROGRAM, len(name_bytes)]) + struct.pack("<H", crc) + name_bytes + body_bytes
+    raw = _build_raw_object(0xF7, TYPE_PROGRAM, name, body_bytes)
 
     use_compress = (len(raw) > DEFAULT_COMPRESS_THRESHOLD) if compress is None else compress
     if use_compress:
@@ -71,6 +75,12 @@ def encode_ppl_program(
         payload = raw
 
     return b"\xf7\x03" + struct.pack(">I", len(payload)) + payload
+
+
+def encode_delete_object(name: str, *, file_type: int = TYPE_PROGRAM) -> bytes:
+    """Encode an 0xEB delete request for an object on the calculator."""
+    raw = _build_raw_object(0xEB, file_type, name)
+    return b"\xeb\x03" + struct.pack(">I", len(raw)) + raw
 
 
 def decode_f7_message(msg: bytes) -> PrimeObject:

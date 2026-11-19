@@ -9,7 +9,13 @@ import time
 
 import hid
 
-from hpprime.files import PrimeObject, decode_f7_message, encode_ppl_program
+from hpprime.files import (
+    TYPE_PROGRAM,
+    PrimeObject,
+    decode_f7_message,
+    encode_delete_object,
+    encode_ppl_program,
+)
 
 
 @dataclass(slots=True)
@@ -281,3 +287,18 @@ class HPPrimeG2:
         """Encode and send a PPL program to the calculator."""
         wire_msg = encode_ppl_program(name, source, compress=compress)
         self.send_message(wire_msg, timeout_ms=timeout_ms)
+
+    def delete_object(
+        self,
+        name: str,
+        *,
+        file_type: int = TYPE_PROGRAM,
+        timeout_ms: int = 5000,
+    ) -> None:
+        """Delete an object on the calculator via 0xEB."""
+        wire_msg = encode_delete_object(name, file_type=file_type)
+        self.send_message(wire_msg, timeout_ms=timeout_ms)
+
+    def delete_ppl(self, name: str, *, timeout_ms: int = 5000) -> None:
+        """Delete a PPL program on the calculator."""
+        self.delete_object(name, file_type=TYPE_PROGRAM, timeout_ms=timeout_ms)

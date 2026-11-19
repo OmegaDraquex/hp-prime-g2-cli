@@ -75,3 +75,9 @@ Verified across all 46 `0xF7` objects in `01_connect_and_send.pcap` (46/46 pass)
 - Host sends V3 message `f9` (1 byte).
 - Calculator streams each stored object as an `0xF7` V3 message (host ACKs each with `0xFE 0x01`).
 - Calculator terminates the transfer with a `0xF9` message (`f9 03 00 00 00 00`), which the host ACKs.
+
+## 6. Deleting Objects (`0xEB`)
+- Host sends V3 message `eb 03 <4 + len(name_utf16le):u32be> <file_type:u8> <len(name_utf16le):u8> <crc16:u16le> <name_utf16le>` (without trailing `00 00`).
+- `crc16` uses the same CRC-16/XMODEM algorithm over `b"\xeb\x03" + u32be(raw_len) + raw[:2] + b"\x00\x00" + raw[4:]`.
+- Calculator responds with a standard `0xFE 0x01` transport ACK.
+- Verified byte-for-byte against `03_delete.pcap` (`clitest` and `new program`).

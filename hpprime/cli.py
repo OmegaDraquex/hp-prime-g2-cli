@@ -140,3 +140,29 @@ def pull(name: str, out_path: Path | None) -> None:
         sys.stdout.write(source)
         if source and not source.endswith("\n"):
             sys.stdout.write("\n")
+
+
+@main.command()
+@click.argument("names", nargs=-1, required=True)
+@click.option("--verify", is_flag=True, help="Read back object list via 0xF9 to confirm deletion.")
+def delete(names: tuple[str, ...], verify: bool) -> None:
+    """Delete one or more PPL programs from the calculator."""
+    try:
+        with HPPrimeG2() as calc:
+            calc.connect()
+            for name in names:
+                calc.delete_ppl(name)
+                click.echo(f"Deleted program {name!r}.")
+            if verify:
+                objects = calc.list_objects()
+    except Exception as exc:
+        raise click.ClickException(str(exc)) from exc
+
+    if verify:
+        remaining = {o.name for o in objects if o.file_type == TYPE_PROGRAM}
+        still_present = [n for n in names if n in remaining]
+        if still_present:
+            raise click.ClickException(
+                f"Verification failed: still present on calculator: {', '.join(still_present)}"
+            )
+        click.echo(f"Verified deletion of {', '.join(repr(n) for n in names)}.")

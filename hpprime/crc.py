@@ -30,17 +30,22 @@ def crc16_xmodem(data: bytes) -> int:
     return crc
 
 
-def compute_f7_crc(raw: bytes) -> int:
-    """Compute the 16-bit header CRC for an uncompressed 0xF7 payload.
+def compute_v3_object_crc(cmd: int, raw: bytes) -> int:
+    """Compute the 16-bit header CRC for an uncompressed V3 object message (0xF7 or 0xEB).
 
-    HP Connectivity Kit hashes the 6-byte 0xF7 V3 frame header (with the
-    uncompressed payload length in big-endian) followed by the raw object
+    HP Connectivity Kit hashes the 6-byte V3 command header (command byte, 0x03,
+    and uncompressed payload length in big-endian) followed by the raw object
     with bytes [2:4] zeroed out.
     """
     if len(raw) < 4:
-        raise ValueError(f"0xF7 raw payload too short ({len(raw)} bytes)")
-    buf = b"\xf7\x03" + struct.pack(">I", len(raw)) + raw[:2] + b"\x00\x00" + raw[4:]
+        raise ValueError(f"0x{cmd:02X} raw payload too short ({len(raw)} bytes)")
+    buf = bytes([cmd, 0x03]) + struct.pack(">I", len(raw)) + raw[:2] + b"\x00\x00" + raw[4:]
     return crc16_xmodem(buf)
+
+
+def compute_f7_crc(raw: bytes) -> int:
+    """Compute the 16-bit header CRC for an uncompressed 0xF7 payload."""
+    return compute_v3_object_crc(0xF7, raw)
 
 
 def verify_f7_raw(raw: bytes) -> bool:
