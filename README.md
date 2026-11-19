@@ -150,12 +150,16 @@ with HPPrimeG2() as calc:
 | Path | Purpose |
 |---|---|
 | [pyproject.toml](pyproject.toml) | Package metadata and `hpprime` CLI script entrypoint |
-| [hpprime/crc.py](hpprime/crc.py) | `crc16_xmodem`, `compute_f7_crc`, and `verify_f7_raw` |
-| [hpprime/files.py](hpprime/files.py) | `0xF7` object encoder/decoder (`encode_ppl_program`, `decode_f7_message`, `decode_ppl_source`) |
+| [hpprime/crc.py](hpprime/crc.py) | `crc16_xmodem`, `compute_v3_object_crc`, `compute_f7_crc`, and `verify_f7_raw` |
+| [hpprime/files.py](hpprime/files.py) | `0xF7`/`0xEB` object encoder/decoder (`encode_ppl_program`, `encode_delete_object`, `decode_f7_message`, `decode_ppl_source`) |
 | [hpprime/protocol.py](hpprime/protocol.py) | `HPPrimeG2` USB HID V3 transport, chunking (`chunk_v3_message`), ACKs, and handshake |
-| [hpprime/cli.py](hpprime/cli.py) | Click CLI (`info`, `list`, `send`, `pull`) |
+| [hpprime/cli.py](hpprime/cli.py) | Click CLI (`info`, `list`, `send`, `pull`, `delete`) |
 | [docs/protocol.md](docs/protocol.md) | Reverse-engineered HP Prime G2 USB HID V3 protocol reference |
+| [docs/HP_PRIME_PPL_AGENT_GUIDE.md](docs/HP_PRIME_PPL_AGENT_GUIDE.md) | HP Prime PPL language & compiler rules guide |
+| [docs/HP_PRIME_HARDWARE_AND_FUNCTIONS_GUIDE.md](docs/HP_PRIME_HARDWARE_AND_FUNCTIONS_GUIDE.md) | HP Prime hardware, keyboard, apps, and functions guide |
+| [docs/HP_Prime_User_Guide_EN.pdf](docs/HP_Prime_User_Guide_EN.pdf) | Official HP Prime User Guide (English PDF) |
 | [tools/decode_pcap.py](tools/decode_pcap.py) | Standalone USBPcap HID interrupt parser and `zlib` inspector |
+| [tools/test_ppl_syntax.py](tools/test_ppl_syntax.py) | HP Prime G2 static PPL linter, parser, and AST interpreter |
 | [tests/test_protocol_offline.py](tests/test_protocol_offline.py) | Offline protocol, chunking, compression, and wire-vector regression tests |
 | [examples/clitest.ppl](examples/clitest.ppl) | Minimal PPL test program |
 | [examples/clitest_big.ppl](examples/clitest_big.ppl) | Multi-chunk / `zlib` test program |
