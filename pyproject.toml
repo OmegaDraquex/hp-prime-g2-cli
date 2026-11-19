@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hpprime"
+version = "0.1.0"
+description = "CLI tool for communicating with the HP Prime G2 graphing calculator over USB HID"
+requires-python = ">=3.12"
+dependencies = [
+    "hidapi>=0.14",
+    "click>=8.1",
+]
+
+[project.scripts]
+hpprime = "hpprime.cli:main"
+
+[tool.setuptools]
+packages = ["hpprime"]

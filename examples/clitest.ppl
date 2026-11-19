@@ -1,0 +1,4 @@
+EXPORT CLITEST()
+BEGIN
+  MSGBOX("Hello from CLI!");
+END;

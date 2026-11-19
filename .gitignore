@@ -1,0 +1,17 @@
+# Python / packaging
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+
+# Private USB captures (contain calculator backups & serial numbers)
+captures/*.pcap
+captures/*.pcapng
+
+# Third-party downloaded installers
+installers/
+
+# Local agent workspace config
+.agents/
